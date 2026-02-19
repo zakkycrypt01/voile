@@ -10,7 +10,6 @@ members = [
     "integration"
 ]
 resolver = "2"
-edition = "2021"
 
 [workspace.dependencies]
 miden = { version = "0.7" }
