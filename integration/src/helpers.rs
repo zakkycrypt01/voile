@@ -6,15 +6,18 @@ use anyhow::{bail, Context, Result};
 use cargo_miden::{run, OutputType};
 use miden_client::{
     account::{
-        component::BasicWallet, Account, AccountBuilder, AccountComponent, AccountId,
-        AccountStorageMode, AccountType, StorageSlot,
+        component::{AuthFalcon512Rpo, BasicWallet},
+        Account, AccountBuilder, AccountComponent, AccountId, AccountStorageMode, AccountType,
+        StorageSlot,
     },
     assembly::Library,
     auth::AuthSecretKey,
     builder::ClientBuilder,
-    crypto::FeltRng,
+    crypto::{rpo_falcon512::SecretKey, FeltRng},
     keystore::FilesystemKeyStore,
-    note::{Note, NoteAssets, NoteInputs, NoteMetadata, NoteRecipient, NoteScript, NoteTag, NoteType},
+    note::{
+        Note, NoteAssets, NoteInputs, NoteMetadata, NoteRecipient, NoteScript, NoteTag, NoteType,
+    },
     rpc::{Endpoint, GrpcClient},
     utils::Deserializable,
     Client, Felt,
@@ -254,12 +257,15 @@ pub async fn create_basic_wallet_account(
     let mut init_seed = [0_u8; 32];
     client.rng().fill_bytes(&mut init_seed);
 
-    let auth_key = AuthSecretKey::new_falcon512_rpo();
+    // Generate a new Falcon512 key pair
+    let key_pair = SecretKey::with_rng(client.rng());
+    let auth_component = AuthFalcon512Rpo::new(key_pair.public_key().to_commitment().into());
 
     let account = AccountBuilder::new(init_seed)
         .account_type(config.account_type)
         .storage_mode(config.storage_mode)
         .with_component(BasicWallet)
+        .with_auth_component(auth_component)
         .build()
         .context("Failed to build basic wallet account")?;
 
@@ -268,6 +274,8 @@ pub async fn create_basic_wallet_account(
         .await
         .context("Failed to add account to client")?;
 
+    // Store the secret key in the keystore
+    let auth_key = AuthSecretKey::Falcon512Rpo(key_pair);
     keystore
         .add_key(&auth_key)
         .context("Failed to add key to keystore")?;
