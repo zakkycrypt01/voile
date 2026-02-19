@@ -1,0 +1,18 @@
+[package]
+name = "voile-user-account"
+version = "0.1.0"
+edition = "2021"
+description = "Voile Protocol - User account for private unlock requests"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+miden = { workspace = true }
+
+[package.metadata.component]
+package = "miden:voile-user-account"
+
+[package.metadata.miden]
+project-kind = "account"
+supported-types = ["RegularAccountImmutableCode"]

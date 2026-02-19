@@ -1,0 +1,35 @@
+{
+  "name": "@voile/web-client",
+  "version": "0.1.0",
+  "description": "Voile Protocol - TypeScript Web Client for private early-liquidity",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "demo": "tsx src/demo.ts"
+  },
+  "keywords": [
+    "miden",
+    "zk",
+    "defi",
+    "staking",
+    "liquidity"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@miden/sdk-web": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.6.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0"
+  }
+}

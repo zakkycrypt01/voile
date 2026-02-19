@@ -2,6 +2,11 @@
 members = [
     "contracts/counter-account",
     "contracts/increment-note",
+    "contracts/voile-user-account",
+    "contracts/voile-lp-pool",
+    "contracts/settlement-note",
+    "contracts/advance-note",
+    "contracts/mock-usdc-faucet",
     "integration"
 ]
 resolver = "2"
