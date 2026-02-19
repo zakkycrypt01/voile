@@ -1,8 +1,50 @@
-# Miden Project
+# Voile Protocol
 
-A workspace structure for building Miden smart contract applications.
+**Private Early Liquidity on Miden**
+
+Voile Protocol enables users to access liquidity from staked/locked assets before the cooldown period ends, with complete privacy. Built on Miden's zero-knowledge architecture.
+
+## 🎯 Problem
+
+In DeFi today:
+- Unstake/redemption requests are **public**
+- Bots can **predict** user behavior
+- Cooldowns **delay** access to funds (1-20+ days)
+- Large users risk **price impact** and **copy-trading**
+
+## ✨ Solution
+
+Voile enables:
+1. **Private Unlock Requests** - Created locally with zk-proofs
+2. **Off-chain Matching** - No public broadcast of intent
+3. **Instant USDC Advance** - LP provides stablecoins immediately
+4. **Automatic Settlement** - Repayment after cooldown via notes
+
+**Zero intent leakage.** No one knows who is unlocking, how much, or when.
+
+## 🏗️ Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                         USER DEVICE                               │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐  │
+│  │ Create Request  │───▶│ Generate Proof  │───▶│ Local Match  │  │
+│  │   (Private)     │    │    (ZK)         │    │  (Off-chain) │  │
+│  └─────────────────┘    └─────────────────┘    └──────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                       MIDEN NETWORK                               │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐  │
+│  │  Settlement     │    │  Advance Note   │    │   LP Pool    │  │
+│  │     Note        │    │  (USDC→User)    │    │   Account    │  │
+│  └─────────────────┘    └─────────────────┘    └──────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+```
 
 ## **Installation**
+
 
 Before getting started, ensure you have the following prerequisites:
 
@@ -10,25 +52,119 @@ Before getting started, ensure you have the following prerequisites:
 
 2. **Install midenup toolchain** - Follow the installation instructions at: <https://github.com/0xMiden/midenup>
 
-## **Structure**
+## **Project Structure**
 
 ```text
-miden-project/
-├── contracts/                   # Each contract as individual crate
-│   ├── counter-account/         # Example: Counter account contract
-│   └── increment-note/          # Example: Increment note contract
-├── integration/                 # Integration crate (scripts + tests)
+voile/
+├── contracts/
+│   ├── voile-user-account/      # User account with unlock requests
+│   ├── voile-lp-pool/           # LP pool holding USDC
+│   ├── settlement-note/         # Auto-repayment after cooldown
+│   ├── advance-note/            # USDC transfer to user
+│   ├── mock-usdc-faucet/        # Mock USDC for testing
+│   ├── counter-account/         # Example counter contract
+│   └── increment-note/          # Example note script
+├── integration/
 │   ├── src/
-│   │   ├── bin/                 # Rust binaries for on-chain interactions
-│   │   ├── config.rs            # Temporary config file (do not modify!)
-│   │   ├── helpers.rs           # Temporary helper file (do not modify!)
+│   │   ├── bin/
+│   │   │   ├── voile_demo.rs    # Testnet demo script
+│   │   │   └── increment_count.rs
+│   │   ├── helpers.rs           # Miden helpers
+│   │   ├── voile_helpers.rs     # Voile-specific helpers
 │   │   └── lib.rs
-│   └── tests/                   # Test files
-├── Cargo.toml                   # Workspace root
-└── rust-toolchain.toml          # Temporary Rust toolchain specification
+│   └── tests/
+│       ├── voile_e2e_test.rs    # End-to-end tests
+│       └── counter_test.rs
+├── web-client/                  # TypeScript SDK
+│   └── src/
+│       ├── index.ts             # Main SDK
+│       ├── matching.ts          # Off-chain matching
+│       ├── pricing.ts           # Fee calculations
+│       ├── crypto.ts            # Cryptographic utilities
+│       └── demo.ts              # Browser demo
+├── Cargo.toml
+└── voile.txt                    # PRD document
 ```
 
+## 💰 **Pricing Model**
+
+| Component | Rate | Example ($3,000) |
+|-----------|------|------------------|
+| Advance Fee | 5% | $150 |
+| APR (14 days) | 10% | $11.50 |
+| **Net Advance** | | **$2,850** |
+
+**Fee Split:** LP gets 80%, Protocol gets 20%
+
+## 🚀 **Quick Start**
+
+### Build Contracts
+
+```bash
+# Build all Voile contracts
+cargo miden build --manifest-path contracts/voile-user-account/Cargo.toml
+cargo miden build --manifest-path contracts/voile-lp-pool/Cargo.toml
+cargo miden build --manifest-path contracts/settlement-note/Cargo.toml
+cargo miden build --manifest-path contracts/advance-note/Cargo.toml
+```
+
+### Run E2E Tests
+
+```bash
+cd integration
+cargo test test_voile_e2e_flow -- --nocapture
+```
+
+### Run Testnet Demo
+
+```bash
+cd integration
+cargo run --bin voile_demo
+```
+
+### TypeScript Client
+
+```bash
+cd web-client
+npm install
+npm run demo
+```
+
+## 📚 **Usage Example (TypeScript)**
+
+```typescript
+import { VoileSDK, createVoileSDK } from '@voile/web-client';
+
+const sdk = createVoileSDK();
+await sdk.initialize();
+
+// Create accounts
+const user = await sdk.createUserAccount();
+const lp = await sdk.createLpPoolAccount(100_000);
+
+// LP creates offer
+sdk.createLpOffer(lp, 50_000, 500, 9); // 9% APR
+
+// User creates PRIVATE unlock request
+const request = sdk.createUnlockRequest(user, 10_000, 14);
+
+// Execute (find match + receive USDC)
+const deal = await sdk.executeUnlockRequest(request);
+console.log(`Received: $${deal.advanceAmount} USDC immediately!`);
+```
+
+## 🔐 **Privacy Guarantees**
+
+| What | Visibility |
+|------|------------|
+| Who is unlocking | **HIDDEN** |
+| Unlock amount | **ENCRYPTED** |
+| Timing | **PRIVATE** |
+| LP matching | **OFF-CHAIN** |
+| Settlement | **ZK-VERIFIED** |
+
 ## **Design Philosophy**
+
 
 This workspace follows a clean separation of concerns:
 
