@@ -1,21 +1,15 @@
 //! Voile Protocol - Integration Helpers
 //! Extended helpers for Voile-specific testing and deployment
 
-use std::{path::Path, sync::Arc};
-
-use anyhow::{Context, Result};
 use miden_client::{
-    account::{AccountId, StorageMap},
-    note::{Note, NoteAssets, NoteTag, NoteType},
-    transaction::OutputNote,
+    account::AccountId,
+    asset::NoteAssets,
+    note::{NoteTag, NoteType},
     Felt, Word,
 };
-use miden_core::FieldElement;
 use rand::RngCore;
 
-use crate::helpers::{
-    build_project_in_dir, AccountCreationConfig, NoteCreationConfig,
-};
+use crate::helpers::NoteCreationConfig;
 
 // ============================================================================
 // VOILE PROTOCOL CONSTANTS
@@ -99,7 +93,7 @@ impl UnlockRequest {
         amount: u64,
         cooldown_end: u64,
         nullifier: &[u8; 32],
-        user_id: AccountId,
+        _user_id: AccountId,
     ) -> Word {
         // Simplified commitment: in production, use proper hash
         let nullifier_felt = u64::from_le_bytes(nullifier[0..8].try_into().unwrap());
@@ -107,7 +101,7 @@ impl UnlockRequest {
             Felt::new(amount),
             Felt::new(cooldown_end),
             Felt::new(nullifier_felt),
-            Felt::new(user_id.to_felt().as_int()),
+            Felt::new(0), // Placeholder for user_id
         ])
     }
     
@@ -181,13 +175,13 @@ impl LpOffer {
     /// Compute offer commitment
     fn compute_commitment(
         offer_id: u64,
-        lp_id: AccountId,
+        _lp_id: AccountId,
         max_amount: u64,
         min_amount: u64,
     ) -> Word {
         Word::from([
             Felt::new(offer_id),
-            Felt::new(lp_id.to_felt().as_int()),
+            Felt::new(0), // Placeholder for lp_id
             Felt::new(max_amount),
             Felt::new(min_amount),
         ])

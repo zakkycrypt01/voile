@@ -6,13 +6,13 @@ use integration::helpers::{
     AccountCreationConfig, NoteCreationConfig,
 };
 use integration::voile_helpers::{
-    UnlockRequest, LpOffer, MatchedDeal, MatchingEngine, PricingCalculator,
+    UnlockRequest, LpOffer, MatchingEngine, PricingCalculator,
     DEFAULT_COOLDOWN_SECONDS, ONE_USDC,
-    current_timestamp, cooldown_end_timestamp,
+    cooldown_end_timestamp,
 };
 
-use miden_client::{account::StorageMap, transaction::OutputNote, Felt, Word};
-use miden_testing::{Auth, MockChain};
+use miden_client::{account::StorageMap, Felt, Word};
+use miden_testing::MockChain;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use std::{path::Path, sync::Arc};
@@ -55,7 +55,7 @@ async fn test_voile_e2e_flow() -> anyhow::Result<()> {
     // =========================================================================
     println!("Step 2: Setting up accounts...");
     
-    let mut builder = MockChain::builder();
+    let _builder = MockChain::builder();
     
     // Initial balances
     let initial_staked_balance = 10000 * ONE_USDC; // 10,000 staked tokens
@@ -270,13 +270,45 @@ async fn test_matching_engine() -> anyhow::Result<()> {
     
     let mut rng = StdRng::seed_from_u64(123);
     
+    // Build user account package to get valid AccountIds
+    let user_account_package = Arc::new(build_project_in_dir(
+        Path::new("../contracts/voile-user-account"),
+        true,
+    )?);
+    
+    let lp_pool_package = Arc::new(build_project_in_dir(
+        Path::new("../contracts/voile-lp-pool"),
+        true,
+    )?);
+    
+    // Create multiple LP accounts for offers
+    let lp1 = create_testing_account_from_package(
+        lp_pool_package.clone(),
+        AccountCreationConfig::default(),
+    ).await?;
+    
+    let lp2 = create_testing_account_from_package(
+        lp_pool_package.clone(),
+        AccountCreationConfig::default(),
+    ).await?;
+    
+    let lp3 = create_testing_account_from_package(
+        lp_pool_package.clone(),
+        AccountCreationConfig::default(),
+    ).await?;
+    
+    let user = create_testing_account_from_package(
+        user_account_package.clone(),
+        AccountCreationConfig::default(),
+    ).await?;
+    
     // Create multiple LP offers with different terms
     let mut engine = MatchingEngine::new();
     
     // Offer 1: Large pool, default APR
     let offer1 = LpOffer::new(
         1,
-        miden_client::account::AccountId::try_from(Felt::new(100))?,
+        lp1.id(),
         100000 * ONE_USDC,
         1000 * ONE_USDC,
         None,
@@ -285,7 +317,7 @@ async fn test_matching_engine() -> anyhow::Result<()> {
     // Offer 2: Smaller pool, better APR
     let offer2 = LpOffer::new(
         2,
-        miden_client::account::AccountId::try_from(Felt::new(200))?,
+        lp2.id(),
         10000 * ONE_USDC,
         500 * ONE_USDC,
         Some(800), // 8% APR (better than default 10%)
@@ -294,7 +326,7 @@ async fn test_matching_engine() -> anyhow::Result<()> {
     // Offer 3: Medium pool, worse APR
     let offer3 = LpOffer::new(
         3,
-        miden_client::account::AccountId::try_from(Felt::new(300))?,
+        lp3.id(),
         50000 * ONE_USDC,
         2000 * ONE_USDC,
         Some(1200), // 12% APR (worse)
@@ -309,7 +341,7 @@ async fn test_matching_engine() -> anyhow::Result<()> {
         1,
         5000 * ONE_USDC,
         cooldown_end_timestamp(DEFAULT_COOLDOWN_SECONDS),
-        miden_client::account::AccountId::try_from(Felt::new(999))?,
+        user.id(),
         &mut rng,
     );
     

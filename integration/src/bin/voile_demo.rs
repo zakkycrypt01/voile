@@ -14,25 +14,25 @@ use integration::helpers::{
     create_note_from_package, setup_client, AccountCreationConfig, ClientSetup, NoteCreationConfig,
 };
 use integration::voile_helpers::{
-    UnlockRequest, LpOffer, MatchedDeal, MatchingEngine, PricingCalculator,
-    DEFAULT_COOLDOWN_SECONDS, ONE_USDC, USDC_DECIMALS,
+    UnlockRequest, LpOffer, MatchingEngine,
+    DEFAULT_COOLDOWN_SECONDS, ONE_USDC,
     current_timestamp, cooldown_end_timestamp,
 };
 
 use anyhow::{Context, Result};
 use miden_client::{
     account::StorageMap,
-    note::{NoteType, NoteAssets},
+    note::NoteType,
     transaction::{OutputNote, TransactionRequestBuilder},
     Felt, Word,
 };
-use rand::{rngs::StdRng, SeedableRng, RngCore};
+use rand::{rngs::StdRng, SeedableRng};
 use std::{path::Path, sync::Arc};
 
 fn print_header(text: &str) {
-    println!("\n{'═'.repeat(60)}");
+    println!("\n{}", "═".repeat(60));
     println!("║ {:<56} ║", text);
-    println!("{'═'.repeat(60)}");
+    println!("{}", "═".repeat(60));
 }
 
 fn print_step(num: u32, text: &str) {
