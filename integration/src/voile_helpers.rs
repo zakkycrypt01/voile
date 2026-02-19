@@ -3,8 +3,7 @@
 
 use miden_client::{
     account::AccountId,
-    asset::NoteAssets,
-    note::{NoteTag, NoteType},
+    note::{NoteAssets, NoteTag, NoteType},
     Felt, Word,
 };
 use rand::RngCore;
@@ -407,10 +406,9 @@ pub fn settlement_note_config(
 ) -> NoteCreationConfig {
     NoteCreationConfig {
         note_type: NoteType::Private, // Encrypted note
-        tag: NoteTag::for_local_use_case(1, 0).expect("Failed to create settlement note tag"),
+        tag: NoteTag::new(1), // Simple numeric tag
         assets: NoteAssets::default(),
         inputs: vec![request_id, amount, cooldown_end, deal_id],
-        ..Default::default()
     }
 }
 
@@ -423,10 +421,9 @@ pub fn advance_note_config(
 ) -> NoteCreationConfig {
     NoteCreationConfig {
         note_type: NoteType::Private, // Encrypted note
-        tag: NoteTag::for_local_use_case(2, 0).expect("Failed to create advance note tag"),
+        tag: NoteTag::new(2), // Simple numeric tag
         assets: NoteAssets::default(),
         inputs: vec![advance_amount, deal_id, offer_id, user_commitment],
-        ..Default::default()
     }
 }
 

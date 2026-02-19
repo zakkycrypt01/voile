@@ -1498,9 +1498,8 @@ dependencies = [
  "miden",
  "miden-client",
  "miden-client-sqlite-store",
- "miden-core 0.19.1",
- "miden-mast-package 0.19.1",
- "miden-objects",
+ "miden-core 0.20.6",
+ "miden-protocol",
  "miden-testing",
  "rand",
  "tokio",
@@ -2398,12 +2397,10 @@ dependencies = [
  "miden-utils-sync 0.19.1",
  "miden-verifier 0.19.1",
  "rand",
- "rand_xoshiro",
  "semver 1.0.27",
  "serde",
  "thiserror",
  "toml 0.9.12+spec-1.1.0",
- "winter-rand-utils",
 ]
 
 [[package]]

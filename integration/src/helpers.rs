@@ -14,10 +14,10 @@ use miden_client::{
     builder::ClientBuilder,
     crypto::FeltRng,
     keystore::FilesystemKeyStore,
-    note::{Note, NoteInputs, NoteMetadata, NoteRecipient, NoteScript, NoteTag, NoteType},
+    note::{Note, NoteAssets, NoteInputs, NoteMetadata, NoteRecipient, NoteScript, NoteTag, NoteType},
     rpc::{Endpoint, GrpcClient},
     utils::Deserializable,
-    Client, Felt, Word,
+    Client, Felt,
 };
 use miden_client_sqlite_store::ClientBuilderSqliteExt;
 use rand::RngCore;
@@ -191,7 +191,7 @@ pub async fn create_account_from_library(
 pub struct NoteCreationConfig {
     pub note_type: NoteType,
     pub tag: NoteTag,
-    pub assets: miden_client::asset::NoteAssets,
+    pub assets: NoteAssets,
     pub inputs: Vec<Felt>,
 }
 
