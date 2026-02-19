@@ -30,3 +30,4 @@ keystore/
 # Ignore contract build artifacts
 contracts/**/target/
 
+voile.txt
